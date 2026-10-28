@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Local Agent</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="dot" id="status-dot"></span>
+      <div>
+        <h1>Local Agent</h1>
+        <p id="status-text">checking Ollama…</p>
+      </div>
+    </div>
+
+    <label class="field">
+      <span>Model</span>
+      <select id="model"></select>
+    </label>
+
+    <div class="field">
+      <span>Workspace</span>
+      <code id="workspace">—</code>
+    </div>
+
+    <button id="new-chat" class="ghost">+ New chat</button>
+
+    <div class="tips">
+      <span>Try</span>
+      <button class="suggestion">List the files in my workspace</button>
+      <button class="suggestion">Create a Python script that renames photos by date, then test it</button>
+      <button class="suggestion">Summarize https://example.com</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="messages" id="messages">
+      <div class="empty" id="empty">
+        <h2>Your agent is ready.</h2>
+        <p>It can read and write files in your workspace, run shell commands, and fetch web pages.</p>
+      </div>
+    </div>
+
+    <form class="composer" id="composer">
+      <textarea id="input" rows="1" placeholder="Ask your agent anything…  (Enter to send, Shift+Enter for a new line)"></textarea>
+      <button type="submit" id="send" title="Send">Send</button>
+      <button type="button" id="stop" class="hidden" title="Stop">Stop</button>
+    </form>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+{
+  "sites": [
+    "copart",
+    "superbid",
+    "sodre_santoro",
+    "leilao_master"
+  ],
+  "filters": {
+    "conditions": [
+      "pequena monta",
+      "não aplicável",
+      "recuperado de financiamento"
+    ],
+    "exclude_expired": true,
+    "min_bid_price_brl": 0.0,
+    "max_bid_price_brl": 300000.0,
+    "makes": [
+      "toyota",
+      "bmw",
+      "fiat",
+      "volkswagen",
+      "chevrolet",
+      "ford",
+      "honda"
+    ],
+    "states": [
+      "all"
+    ],
+    "min_year": null,
+    "max_km": null
+  },
+  "valuation": {
+    "compare_against": "fipe",
+    "min_margin_percent": 30.0,
+    "max_margin_percent": 60.0,
+    "safety_buffer_percent": 10,
+    "max_lots_to_value": 2000
+  },
+  "costs": {
+    "auction_fee_percent": 10.0,
+    "despachante_brl": 800.0,
+    "transfer_brl": 350.0,
+    "tow_brl": 400.0,
+    "repairs_estimate_brl": 1500.0,
+    "imprevistos_percent": 10.0,
+    "editable": true
+  },
+  "scraper_options": {
+    "sodre_max_pages": 8,
+    "superbid_batch_size": 40,
+    "superbid_max_events": 500,
+    "superbid_max_pages": 3,
+    "superbid_concurrency": 3,
+    "superbid_include_conserved_fleet": false,
+    "copart_page_size": 1000,
+    "copart_max_pages": 3,
+    "copart_headless": true,
+    "copart_exclude_motorcycles": true,
+    "copart_max_bid_fipe_ratio": 0.85
+  },
+  "alerts": {
+    "enabled": true,
+    "telegram_enabled": false,
+    "telegram_bot_token": "",
+    "telegram_chat_id": "",
+    "whatsapp": {
+      "enabled": true,
+      "provider": "bridge",
+      "phone": "",
+      "apikey": "",
+      "meta_phone_number_id": "",
+      "meta_token": "",
+      "twilio_account_sid": "",
+      "twilio_auth_token": "",
+      "twilio_from": "",
+      "mode": "ending_today",
+      "daily_time": "08:00",
+      "max_deals": 50,
+      "min_bid": 10000,
+      "min_margin_percent": 30,
+      "notify_on_empty": false,
+      "scan_before_digest": true,
+      "bridge_port": 8099,
+      "bridge_recipient": "+556196699696"
+    }
+  },
+  "schedule": {
+    "auto_search": false,
+    "interval_hours": 3
+  }
+}

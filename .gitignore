@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+workspace/*
+!workspace/.gitkeep
+.gradio/
+
+# Runtime state: never commit the WhatsApp session or the scan database.
+data/whatsapp_auth/
+data/leiloes.db
+data/*.log
+digest-result.json
