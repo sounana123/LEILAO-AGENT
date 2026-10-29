@@ -34,13 +34,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Restore state (WhatsApp session, database, FIPE cache)
+      - name: Restore state (database, FIPE cache)
         uses: actions/cache/restore@v4
         with:
-          path: data
-          key: leilao-state-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            data/leiloes.db
+            data/fipe_cache.json
+          key: leilao-db-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            leilao-state-
+            leilao-db-
 
       - uses: actions/setup-python@v5
         with:
@@ -68,12 +70,14 @@ jobs:
           WHATSAPP_BRIDGE_RECIPIENT: ${{ secrets.WHATSAPP_RECIPIENT }}
         run: python -m agents.leilao.ci digest ${{ inputs.dry_run && '--dry-run' || '' }}
 
-      - name: Save state
+      - name: Save state (database, FIPE cache)
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: data
-          key: leilao-state-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            data/leiloes.db
+            data/fipe_cache.json
+          key: leilao-db-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Upload the result
         if: always()
