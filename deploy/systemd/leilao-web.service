@@ -1,0 +1,20 @@
+[Unit]
+Description=Auction Deal Scanner (web UI + daily WhatsApp digest)
+After=network-online.target leilao-bridge.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/leilao
+Environment=HOME=/home/ubuntu
+Environment=PYTHONUNBUFFERED=1
+Environment=TZ=America/Sao_Paulo
+ExecStart=/opt/leilao/.venv/bin/python -m uvicorn app:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auction Deal Scanner</title>
+  <link rel="stylesheet" href="/static/css/leilao.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">◆</span>
+      <div>
+        <h1>Auction Deal Scanner</h1>
+        <p>Live salvage &amp; repossession lots valued against FIPE</p>
+      </div>
+    </div>
+    <div class="actions">
+      <a class="btn ghost" href="/">Back to agent</a>
+      <a class="btn ghost" id="btnCsv" href="/api/leilao/lots.csv?only_worth_it=true">Export CSV</a>
+      <button class="btn primary" id="btnSearch">Search now</button>
+    </div>
+  </header>
+
+  <div class="scanbar">
+    <div id="scanStatus" class="scan-status">No scan yet — press “Search now”.</div>
+    <div id="scanSpinner" class="spinner hidden"></div>
+  </div>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <section class="card">
+        <h2>Sources</h2>
+        <div id="sources" class="sources"></div>
+      </section>
+
+      <section class="card">
+        <h2>Filters</h2>
+        <label class="switch">
+          <input type="checkbox" id="onlyViable" checked>
+          <span>Only profitable lots</span>
+        </label>
+        <label class="switch">
+          <input type="checkbox" id="includeConserved">
+          <span>Include conserved fleet</span>
+        </label>
+        <p class="hint">Conserved-fleet auctions are municipal car sales with no declared damage. They are excluded by default; changing this applies on the next scan.</p>
+        <div class="field">
+          <label for="minMargin">Minimum ROI (%)</label>
+          <input type="number" id="minMargin" value="30" min="0" step="1">
+        </div>
+        <div class="field">
+          <label for="minBid">Minimum current bid (R$)</label>
+          <input type="number" id="minBid" value="0" min="0" step="1000" placeholder="0 = no minimum">
+        </div>
+        <div class="field">
+          <label for="maxBid">Maximum current bid (R$)</label>
+          <input type="number" id="maxBid" value="300000" min="0" step="1000">
+        </div>
+        <p class="hint">The minimum bid applies to this list and to the WhatsApp digest. 0 = no minimum. Press “Save &amp; recalculate” to keep it after a reload.</p>
+        <div class="field">
+          <label>Conditions</label>
+          <div id="conditionFilter" class="checks"></div>
+        </div>
+        <div class="field">
+          <label>Makes</label>
+          <div id="makeFilter" class="checks"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Costs &amp; buffer</h2>
+        <p class="hint">Edit any value, then recalculate. All margins are ROI on total cash committed.</p>
+        <div class="field">
+          <label for="costFee">Auction fee (%)</label>
+          <input type="number" id="costFee" step="0.5" min="0">
+        </div>
+        <div class="field">
+          <label for="costDespachante">Document agent (R$)</label>
+          <input type="number" id="costDespachante" step="50" min="0">
+        </div>
+        <div class="field">
+          <label for="costTransfer">Transfer / plates (R$)</label>
+          <input type="number" id="costTransfer" step="50" min="0">
+        </div>
+        <div class="field">
+          <label for="costTow">Tow / pickup (R$)</label>
+          <input type="number" id="costTow" step="50" min="0">
+        </div>
+        <div class="field">
+          <label for="costRepairs">Repairs estimate (R$)</label>
+          <input type="number" id="costRepairs" step="100" min="0">
+        </div>
+        <div class="field">
+          <label for="costBuffer">Contingency (% of resale)</label>
+          <input type="number" id="costBuffer" step="1" min="0">
+        </div>
+        <button class="btn primary full" id="btnRecalc">Save &amp; recalculate</button>
+      </section>
+
+      <section class="card">
+        <h2>WhatsApp digest</h2>
+        <p class="hint">Send today's profitable lots to your own WhatsApp or to another number. Nothing is sent until you connect or save a number.</p>
+        <label class="switch">
+          <input type="checkbox" id="waEnabled">
+          <span>Send daily</span>
+        </label>
+        <div class="field">
+          <label for="waProvider">Delivery</label>
+          <select id="waProvider">
+            <option value="bridge">WhatsApp Web — scan a QR code</option>
+            <option value="callmebot">CallMeBot — free (currently full)</option>
+            <option value="meta">Meta Cloud API</option>
+            <option value="twilio">Twilio</option>
+          </select>
+        </div>
+
+        <div id="waBridgePanel">
+          <p class="hint" id="waBridgeState">Checking the local bridge…</p>
+          <img id="waQr" class="wa-qr hidden" alt="WhatsApp QR code to scan">
+          <div class="btn-row">
+            <button class="btn ghost" id="btnWaConnect">Connect / show QR</button>
+            <button class="btn ghost" id="btnWaUnlink">Unlink</button>
+          </div>
+          <p class="hint">In WhatsApp: Settings → Linked devices → Link a device, then scan. This uses an unofficial API; WhatsApp may limit the number.</p>
+          <div class="field">
+            <label for="waBridgeRecipient">Send to (optional)</label>
+            <input type="tel" id="waBridgeRecipient" placeholder="Leave empty to message yourself" autocomplete="off">
+            <p class="hint">Full number with country code, e.g. +5511999999999. The digest is sent from your linked WhatsApp to this number; leave empty to use “Message yourself”.</p>
+          </div>
+          <div class="field">
+            <label for="waPairPhone">No camera? Link with a phone number</label>
+            <div class="btn-row">
+              <input type="tel" id="waPairPhone" placeholder="+5511999999999" autocomplete="off">
+              <button class="btn ghost" id="btnWaPair">Get code</button>
+            </div>
+            <p class="hint" id="waPairCode"></p>
+          </div>
+        </div>
+
+        <div id="waCreds" class="hidden">
+          <div class="field">
+            <label for="waPhone">WhatsApp number</label>
+            <input type="tel" id="waPhone" placeholder="+5511999999999" autocomplete="off">
+          </div>
+          <div data-provider="callmebot" class="hidden">
+            <div class="field">
+              <label for="waApikey">CallMeBot API key</label>
+              <input type="text" id="waApikey" placeholder="sent by the bot" autocomplete="off">
+            </div>
+          </div>
+          <div data-provider="meta" class="hidden">
+            <div class="field">
+              <label for="waMetaPhoneId">Phone number ID</label>
+              <input type="text" id="waMetaPhoneId" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="waMetaToken">Access token</label>
+              <input type="password" id="waMetaToken" placeholder="press Save to keep" autocomplete="off">
+            </div>
+          </div>
+          <div data-provider="twilio" class="hidden">
+            <div class="field">
+              <label for="waTwilioSid">Account SID</label>
+              <input type="text" id="waTwilioSid" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="waTwilioToken">Auth token</label>
+              <input type="password" id="waTwilioToken" placeholder="press Save to keep" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="waTwilioFrom">From (sender)</label>
+              <input type="text" id="waTwilioFrom" placeholder="+14155238886" autocomplete="off">
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="waMode">What to send</label>
+          <select id="waMode">
+            <option value="ending_today">Lots closing today</option>
+            <option value="new_today">Lots found today</option>
+            <option value="both">Either</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="waTime">Send at (local time)</label>
+          <input type="time" id="waTime" value="18:00">
+        </div>
+        <div class="field">
+          <label for="waMax">Max lots per digest</label>
+          <input type="number" id="waMax" min="1" max="20" step="1" value="8">
+        </div>
+        <div class="field">
+          <label for="waMinBid">Minimum bid (R$)</label>
+          <input type="number" id="waMinBid" min="0" step="1000" value="0" placeholder="0 = no minimum">
+        </div>
+        <p class="hint">Only lots whose current bid is at least this value are included in the digest. The digest also respects the minimum bid set in Filters, so the higher of the two applies.</p>
+        <label class="switch">
+          <input type="checkbox" id="waScanFirst" checked>
+          <span>Run a scan before sending</span>
+        </label>
+        <button class="btn ghost full" id="btnWaSave">Save WhatsApp settings</button>
+        <button class="btn ghost full" id="btnWaTest">Send test message</button>
+        <button class="btn primary full" id="btnWaDigest">Send digest now</button>
+        <p class="hint" id="waStatus">Not configured yet.</p>
+      </section>
+    </aside>
+
+    <section class="content">
+      <div class="stats" id="stats"></div>
+      <div class="notice hidden" id="notice"></div>
+
+      <div class="table-wrap">
+        <table class="lots">
+          <thead>
+            <tr>
+              <th>Vehicle</th>
+              <th>Source</th>
+              <th class="num">Bid</th>
+              <th class="num">FIPE</th>
+              <th class="num">Costs</th>
+              <th class="num">Max bid</th>
+              <th class="num">Net</th>
+              <th class="num">ROI</th>
+              <th>Ends</th>
+              <th>Location</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="lotsBody"></tbody>
+        </table>
+        <p class="table-note">
+          ROI is measured against today's bid. Because bids rise until the lot closes,
+          <b>Max bid</b> is the highest bid that still clears your minimum margin — bid up to that, not to the ROI shown.
+          Lots whose auctioneer publishes a fee schedule (Sodré) use those real fees; the rest use your cost assumptions.
+        </p>
+        <div class="empty hidden" id="empty"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/js/leilao.js"></script>
+</body>
+</html>

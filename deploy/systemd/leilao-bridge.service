@@ -1,0 +1,18 @@
+[Unit]
+Description=WhatsApp Web bridge (Baileys) for the auction digest
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/leilao/agents/leilao/whatsapp_bridge
+Environment=HOME=/home/ubuntu
+Environment=TZ=America/Sao_Paulo
+ExecStart=/usr/bin/node index.js --port 8099 --auth /opt/leilao/data/whatsapp_auth
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
