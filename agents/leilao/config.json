@@ -12,7 +12,7 @@
       "recuperado de financiamento"
     ],
     "exclude_expired": true,
-    "min_bid_price_brl": 0.0,
+    "min_bid_price_brl": 10000.0,
     "max_bid_price_brl": 300000.0,
     "makes": [
       "toyota",
