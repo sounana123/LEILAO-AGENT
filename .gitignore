@@ -5,8 +5,8 @@ workspace/*
 !workspace/.gitkeep
 .gradio/
 
-# Runtime state: never commit the WhatsApp session or the scan database.
-data/whatsapp_auth/
+# Runtime state
+# data/whatsapp_auth/  # tracked for GitHub Actions
 data/leiloes.db
 data/*.log
 digest-result.json
